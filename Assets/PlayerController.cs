@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour {
 	private float _air = 1.0f;
 	private float _surface = 1.232247f;
 	private float _waterDrag = 5f;
-	private float _airDrag = 0.5f;
+	//private float _airDrag = 0.5f;
 	private float _gravity = -5.4f;
 	private float _surfaceFalloffDist = 0.01f;
 	// Use this for initialization
@@ -31,7 +31,7 @@ public class PlayerController : MonoBehaviour {
 		// And fall off depending on how close to the surface
 		_falloff = 1.0f;
 		_dist = _surface - transform.position.y;
-		_buoyancy = 1.0f - (_dist / 100.0f);
+		_buoyancy = 1.0f - (_dist / 40.0f);
 
 		if( _dist < _surfaceFalloffDist )
 		{
@@ -50,11 +50,11 @@ public class PlayerController : MonoBehaviour {
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
-				rigidbody.AddForce(new Vector3(0, _diveStrength, 0));
-			}
-			if (Input.GetMouseButtonDown(1))
-			{
-				rigidbody.AddForce(new Vector3(0, -_diveStrength, 0));
+				float ypos = (Input.mousePosition.y / Screen.height);
+				if (ypos < 0.5)
+					rigidbody.AddForce(new Vector3(0, _diveStrength, 0));
+				else 
+					rigidbody.AddForce(new Vector3(0, -_diveStrength, 0));
 			}
 		}
 
