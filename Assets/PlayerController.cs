@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour {
 	private float _buoyancy = 1.0f;
 	private float _buoyancyMultiplier = 4.0f;
 	private float _air = 1.0f;
-	private float _surface = 1.232247f;
+	private float _surface = 1.25f;
 	private float _waterDrag = 5f;
 	//private float _airDrag = 0.5f;
 	private float _gravity = -3.4f;
