@@ -4,17 +4,22 @@ using System.Collections;
 public class PlayerController : MonoBehaviour {
 
 	private float _buoyancy = 1.0f;
-	private float _buoyancyMultiplier = 6.0f;
+	private float _buoyancyMultiplier = 4.0f;
 	private float _air = 1.0f;
 	private float _surface = 1.232247f;
 	private float _waterDrag = 5f;
 	//private float _airDrag = 0.5f;
-	private float _gravity = -5.4f;
+	private float _gravity = -3.4f;
 	private float _surfaceFalloffDist = 0.01f;
 	// Use this for initialization
 	private float _falloff, _dist;
 
-	private float _diveStrength = -50.4f;
+	private float _swimStrength = 50.4f;
+	private bool _swimdown = false;
+	private bool _swimup = false;
+	private float _swimTime = 1.0f;
+	private float _swamTime = 0.0f;
+
 
 	void Start () {
 	
@@ -31,7 +36,7 @@ public class PlayerController : MonoBehaviour {
 		// And fall off depending on how close to the surface
 		_falloff = 1.0f;
 		_dist = _surface - transform.position.y;
-		_buoyancy = 1.0f - (_dist / 40.0f);
+		_buoyancy = 1.0f - (_dist / 100.0f);
 
 		if( _dist < _surfaceFalloffDist )
 		{
@@ -42,19 +47,59 @@ public class PlayerController : MonoBehaviour {
 		rigidbody.drag = _waterDrag;
 	}
 
-	// Update is called once per frame
-	void Update () {
-
+	void Update() {
 		// Can only control when under or near surface 
 		if (transform.position.y < _surface + 0.1f)
 		{
+			
+			if (Input.GetMouseButtonUp(0))
+			{
+				_swimup = false;
+				_swimdown = false;
+				_swamTime = 0.0f;
+			}
+			
 			if (Input.GetMouseButtonDown(0))
 			{
 				float ypos = (Input.mousePosition.y / Screen.height);
 				if (ypos < 0.5)
-					rigidbody.AddForce(new Vector3(0, _diveStrength, 0));
+				{
+					_swimdown = true;
+					_swamTime = 0.0f;
+				}
 				else 
-					rigidbody.AddForce(new Vector3(0, -_diveStrength, 0));
+				{
+					_swimup = true;
+					_swamTime = 0.0f;
+				}
+			}
+		}
+		else 
+		{
+			_swimup = false;
+			_swimdown = false;
+			_swamTime = 0.0f;
+		}
+	}
+
+	// Update is called once per frame
+	void FixedUpdate () {
+
+		if (_swimup || _swimdown)
+		{
+			_swamTime += Time.deltaTime;
+			if (_swamTime > _swimTime)
+			{
+				_swimup = _swimdown = false;
+				_swamTime = 0.0f;
+			}
+			if (_swimdown)
+			{
+				rigidbody.AddForce(new Vector3(0, -_swimStrength*Time.deltaTime, 0));
+			} 
+			if (_swimup)
+			{
+				rigidbody.AddForce(new Vector3(0, _swimStrength*Time.deltaTime, 0));
 			}
 		}
 
