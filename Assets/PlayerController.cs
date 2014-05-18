@@ -3,10 +3,22 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
+	public float maxDepth = 0.0f;
+	private float oxygenUsageRate = 1.0f;
+	private float oxygenUsageRateMin = 1.0f;
+	private float oxygen;
+	private float oxygenMax = 300.0f;
+	private float oxygenUsageIncreasePerSwim = 0.1f;
+	private float oxygenUsageDecayRate = 0.1f;
+	public GUIText oxygenLabel;
+	public GUIText oxygenRateLabel;
+
+		
 	private float _buoyancy = 1.0f;
 	private float _buoyancyMultiplier = 4.0f;
 	private float _air = 1.0f;
-	private float _surface = 1.25f;
+
+	private float _surface = 0.0f;
 	private float _waterDrag = 5f;
 	//private float _airDrag = 0.5f;
 	private float _gravity = -3.4f;
@@ -21,8 +33,12 @@ public class PlayerController : MonoBehaviour {
 	private float _swamTime = 0.0f;
 
 
+
+
 	void Start () {
-	
+		maxDepth = 0.0f;
+		oxygen = oxygenMax;
+		oxygenUsageRate = oxygenUsageRateMin;
 	}
 	
 	void AboveWaterUpdate () {
@@ -47,7 +63,30 @@ public class PlayerController : MonoBehaviour {
 		rigidbody.drag = _waterDrag;
 	}
 
+	void UpdateOxygenUI()
+	{
+		oxygenLabel.text = "Oxygen: " + oxygen;
+		oxygenRateLabel.text = "Rate: " + oxygenUsageRate;
+	}
+
+
+	void UpdateOxygen()
+	{
+		oxygenUsageRate = Mathf.Lerp(oxygenUsageRate, oxygenUsageRateMin, Time.deltaTime*oxygenUsageDecayRate);
+		if (HeadUnderWater())
+		{
+			oxygen -= oxygenUsageRate * Time.deltaTime;
+		} else {
+			oxygen = oxygenMax;
+		}
+		UpdateOxygenUI();
+	}
+
 	void Update() {
+		UpdateOxygen();
+
+		maxDepth = Mathf.Max(maxDepth, transform.position.y);
+
 		// Can only control when under or near surface 
 		if (transform.position.y < _surface + 0.1f)
 		{
@@ -61,6 +100,10 @@ public class PlayerController : MonoBehaviour {
 			
 			if (Input.GetMouseButtonDown(0))
 			{
+				if (!_swimup && !_swimdown)
+				{
+					oxygenUsageRate += oxygenUsageIncreasePerSwim;
+				}
 				float ypos = (Input.mousePosition.y / Screen.height);
 				if (ypos < 0.5)
 				{
@@ -80,6 +123,17 @@ public class PlayerController : MonoBehaviour {
 			_swimdown = false;
 			_swamTime = 0.0f;
 		}
+	}
+
+	bool HeadUnderWater()
+	{
+		return(transform.position.y < _surface - (0.06));
+	}
+
+
+	bool UnderWater()
+	{
+		return(transform.position.y < _surface);
 	}
 
 	// Update is called once per frame
@@ -106,7 +160,7 @@ public class PlayerController : MonoBehaviour {
 		// gravity
 		rigidbody.AddForce(new Vector3(0, _gravity, 0));
 
-		if (transform.position.y < _surface)
+		if (UnderWater())
 		{
 			UnderwaterUpdate();
 		} else {
