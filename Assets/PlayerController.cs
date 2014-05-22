@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour {
 
+	public Animator animator;
 	public float maxDepth = 0.0f;
 	private float oxygenUsageRate = 1.0f;
 	private float oxygenUsageRateMin = 1.0f;
@@ -29,7 +30,7 @@ public class PlayerController : MonoBehaviour {
 	private float _swimStrength = 50.4f;
 	private bool _swimdown = false;
 	private bool _swimup = false;
-	private float _swimTime = 1.0f;
+	private float _swimTime = 1.25f;
 	private float _swamTime = 0.0f;
 
 
@@ -123,6 +124,8 @@ public class PlayerController : MonoBehaviour {
 			_swimdown = false;
 			_swamTime = 0.0f;
 		}
+
+		UpdateAnimation();
 	}
 
 	bool HeadUnderWater()
@@ -166,6 +169,19 @@ public class PlayerController : MonoBehaviour {
 		} else {
 			AboveWaterUpdate();
 		}
+	}
+
+	void UpdateAnimation()
+	{
+		animator.SetBool("Treading", !HeadUnderWater());
+		animator.SetBool("Swimming", _swimup || _swimdown);
+
+		if (_swimup)
+			animator.SetBool("Direction", false);
+		else if (_swimdown)
+			animator.SetBool("Direction", true);
+		else
+			animator.SetBool("Direction", rigidbody.velocity.y < 0.0f);
 	}
 }
 
