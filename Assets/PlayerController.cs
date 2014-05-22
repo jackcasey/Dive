@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour {
 	private float oxygenUsageRate = 1.0f;
 	private float oxygenUsageRateMin = 1.0f;
 	private float oxygen;
-	private float oxygenMax = 300.0f;
+	private float oxygenMax = 200.0f;
 	private float oxygenUsageIncreasePerSwim = 0.1f;
 	private float oxygenUsageDecayRate = 0.1f;
 	public GUIText oxygenLabel;
