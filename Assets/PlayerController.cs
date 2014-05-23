@@ -4,16 +4,20 @@ using System.Collections;
 public class PlayerController : MonoBehaviour {
 
 	public Animator animator;
+	public float diveDepth = 0.0f;
 	public float maxDepth = 0.0f;
 	private float oxygenUsageRate = 1.0f;
 	private float oxygenUsageRateMin = 1.0f;
-	private float oxygen;
-	private float oxygenMax = 300.0f;
+	public float oxygen;
+	public float oxygenMax = 300.0f;
 	private float oxygenUsageIncreasePerSwim = 0.075f;
 	private float oxygenUsageDecayRate = 0.1f;
 	public GUIText oxygenLabel;
 	public GUIText oxygenRateLabel;
+	public GUIText recordDepthLabel;
+	public GUIText diveDepthLabel;
 
+	public Fader fader;
 		
 	private float _buoyancy = 1.0f;
 	private float _buoyancyMultiplier = 4.0f;
@@ -64,10 +68,12 @@ public class PlayerController : MonoBehaviour {
 		rigidbody.drag = _waterDrag;
 	}
 
-	void UpdateOxygenUI()
+	void UpdateUI()
 	{
 		oxygenLabel.text = "Oxygen: " + oxygen;
 		oxygenRateLabel.text = "Rate: " + oxygenUsageRate;
+		diveDepthLabel.text = "Dive Depth: " + diveDepth.ToString("F2") + "m";
+		recordDepthLabel.text = "Record Depth: " + maxDepth.ToString("F2") + "m";
 	}
 
 
@@ -77,16 +83,33 @@ public class PlayerController : MonoBehaviour {
 		if (HeadUnderWater())
 		{
 			oxygen -= oxygenUsageRate * Time.deltaTime;
+			if(oxygen < 20)
+				fader.FadeOut();
+
+			if (oxygen < 0.0f)
+				Die();
 		} else {
+			fader.FadeIn();
 			oxygen = oxygenMax;
+			oxygenUsageRate = oxygenUsageRateMin;
+			maxDepth = Mathf.Max(diveDepth, maxDepth);
+			diveDepth = 0.0f;
 		}
-		UpdateOxygenUI();
+	}
+
+	void Die()
+	{
+		diveDepth = 0.0f;
+		transform.position = new Vector3(transform.position.x, 0.0f, transform.position.z);
+		fader.fade = 1.0f;
+		fader.FadeIn();
 	}
 
 	void Update() {
 		UpdateOxygen();
+		UpdateUI();
 
-		maxDepth = Mathf.Max(maxDepth, transform.position.y);
+		diveDepth = Mathf.Max(diveDepth, transform.position.y / -.15f);
 
 		// Can only control when under or near surface 
 		if (transform.position.y < _surface + 0.1f)
